@@ -37,11 +37,8 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grid1.Location = new System.Drawing.Point(12, 12);
-            this.grid1.MajorTicColor = System.Drawing.Color.LightSlateGray;
             this.grid1.MajorXTicsCount = 3;
             this.grid1.MajorYTicsCount = 2;
-            this.grid1.MinDelta = 10;
-            this.grid1.MinorTicColor = System.Drawing.Color.LightGray;
             this.grid1.Name = "grid1";
             this.grid1.Size = new System.Drawing.Size(668, 440);
             this.grid1.TabIndex = 0;

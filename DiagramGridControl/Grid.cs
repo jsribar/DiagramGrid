@@ -16,6 +16,9 @@ namespace DiagramGrid.Controls
         public Grid()
         {
             InitializeComponent();
+            BackColor = SystemColors.Window;
+            MajorTicColor = Color.LightGray;
+            MinorTicColor = Color.WhiteSmoke;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -41,33 +44,53 @@ namespace DiagramGrid.Controls
 
         private void DrawGrid(Graphics g)
         {
-            using (Pen majorTicPen = new Pen(MajorTicColor))
+            int deltaYMajor = GetMajorYTicsDelta();
+            int nYMinor = deltaYMajor / minDelta;
+            int deltaY = nYMinor == 0 ? deltaYMajor : deltaYMajor / nYMinor;
+            int nY = (Height - 1) / deltaY;
+
+            int deltaXMajor = GetMajorXTicsDelta();
+            int nXMinor = deltaXMajor / minDelta;
+            int deltaX = nXMinor == 0 ? deltaXMajor : deltaXMajor / nXMinor;
+            int nX = (Width - 1) / deltaX;
+
             using (Pen minorTicPen = new Pen(MinorTicColor))
             {
-                int deltaYMajor = GetMajorYTicsDelta();
-                int nYMinor = deltaYMajor / minDelta;
-                int deltaY = nYMinor == 0 ? deltaYMajor : deltaYMajor / nYMinor;
-                int nY = (Height - 1) / deltaY;
-                for (int i = 0, y = Height - 1; i <= nY; ++i)
+                if (nYMinor != 0)
                 {
-                    if (nYMinor != 0 && i % nYMinor != 0)
-                        g.DrawLine(minorTicPen, 0, y, Width, y);
-                    else
-                        g.DrawLine(majorTicPen, 0, y, Width, y);
-                    y -= deltaY;
+                    for (int i = 0, y = Height - 1; i <= nY; ++i)
+                    {
+                        if (i % nYMinor != 0)
+                            g.DrawLine(minorTicPen, 0, y, Width, y);
+                        y -= deltaY;
+                    }
                 }
 
-                int deltaXMajor = GetMajorXTicsDelta();
-                int nXMinor = deltaXMajor / minDelta;
-                int deltaX = nXMinor == 0 ? deltaXMajor : deltaXMajor / nXMinor;
-                int nX = (Width - 1) / deltaX;
-                for (int i = 0, x = 0; i <= nX; ++i)
+                if (nXMinor != 0)
                 {
-                    if (nXMinor != 0 && i % nXMinor != 0)
-                        g.DrawLine(minorTicPen, x, 0, x, Height - 1);
-                    else
-                        g.DrawLine(majorTicPen, x, 0, x, Height - 1);
-                    x += deltaX;
+                    for (int i = 0, x = 0; i <= nX; ++i)
+                    {
+                        if (nXMinor != 0 && i % nXMinor != 0)
+                            g.DrawLine(minorTicPen, x, 0, x, Height - 1);
+                        x += deltaX;
+                    }
+                }
+            }
+
+            if (nYMinor != 0)
+                deltaY *= nYMinor;
+            if (nXMinor != 0)
+                deltaX *= nXMinor;
+            using (Pen majorTicPen = new Pen(MajorTicColor))
+            {
+                for (int y = Height - 1; y >= 0; y -= deltaY)
+                {
+                    g.DrawLine(majorTicPen, 0, y, Width, y);
+                }
+
+                for (int x = 0; x <= Width; x += deltaX)
+                {
+                    g.DrawLine(majorTicPen, x, 0, x, Height - 1);
                 }
             }
         }
@@ -139,6 +162,7 @@ namespace DiagramGrid.Controls
         [Category("Custom")]
         [Browsable(true)]
         [Description("Sets or gets the color of major tics line")]
+        [DefaultValue(typeof(Color), "LightGray")]
         public Color MajorTicColor
         {
             get => majorTicColor;
@@ -155,6 +179,7 @@ namespace DiagramGrid.Controls
         [Category("Custom")]
         [Browsable(true)]
         [Description("Sets or gets the color of minor tics line")]
+        [DefaultValue(typeof(Color), "WhiteSmoke")]
         public Color MinorTicColor
         {
             get => minorTicColor;
@@ -165,6 +190,16 @@ namespace DiagramGrid.Controls
                     minorTicColor = value;
                     NotifyPropertyChanged(nameof(MinorTicColor));
                 }
+            }
+        }
+
+        [DefaultValue(typeof(Color), "Window")]
+        public new Color BackColor
+        {
+            get => base.BackColor;
+            set
+            {
+                base.BackColor = value;
             }
         }
 
