@@ -44,35 +44,39 @@ namespace DiagramGrid.Controls
 
         private void DrawGrid(Graphics g)
         {
-            int deltaYMajor = GetMajorYTicsDelta();
-            int nYMinor = deltaYMajor / minDelta;
-            int deltaY = nYMinor == 0 ? deltaYMajor : deltaYMajor / nYMinor;
-            int nY = (Height - 1) / deltaY;
+            int deltaY = GetMajorYTicsDelta();
+            int nYMinor = GetMinorTicsCount(deltaY);
+            if (nYMinor != 0)
+                deltaY /= nYMinor;
+            int minorYTicsCount = (Height - 1) / deltaY;
+            int yMin = Height - 1 - minorYTicsCount * deltaY;
 
-            int deltaXMajor = GetMajorXTicsDelta();
-            int nXMinor = deltaXMajor / minDelta;
-            int deltaX = nXMinor == 0 ? deltaXMajor : deltaXMajor / nXMinor;
-            int nX = (Width - 1) / deltaX;
+            int deltaX = GetMajorXTicsDelta();
+            int nXMinor = GetMinorTicsCount(deltaX);
+            if (nXMinor != 0)
+                deltaX /= nXMinor;
+            int minorXTicsCount = (Width - 1) / deltaX;
+            int xMax = majorXTicsCount * deltaX;
+            if (nXMinor != 0)
+                xMax *= nXMinor;
 
             using (Pen minorTicPen = new Pen(MinorTicColor))
             {
                 if (nYMinor != 0)
                 {
-                    for (int i = 0, y = Height - 1; i <= nY; ++i)
+                    for (int y = Height - 1, i = 0; y >= yMin; y -= deltaY, ++i)
                     {
-                        if (i % nYMinor != 0)
-                            g.DrawLine(minorTicPen, 0, y, Width, y);
-                        y -= deltaY;
+                        if (i % minorYTicsCount != 0)
+                            g.DrawLine(minorTicPen, 0, y, xMax, y);
                     }
                 }
 
                 if (nXMinor != 0)
                 {
-                    for (int i = 0, x = 0; i <= nX; ++i)
+                    for (int x = 0, i = 0; x <= xMax; x += deltaX, ++i)
                     {
-                        if (nXMinor != 0 && i % nXMinor != 0)
-                            g.DrawLine(minorTicPen, x, 0, x, Height - 1);
-                        x += deltaX;
+                        if (i % minorXTicsCount != 0)
+                            g.DrawLine(minorTicPen, x, yMin, x, Height - 1);
                     }
                 }
             }
@@ -85,12 +89,12 @@ namespace DiagramGrid.Controls
             {
                 for (int y = Height - 1; y >= 0; y -= deltaY)
                 {
-                    g.DrawLine(majorTicPen, 0, y, Width, y);
+                    g.DrawLine(majorTicPen, 0, y, xMax, y);
                 }
 
                 for (int x = 0; x <= Width; x += deltaX)
                 {
-                    g.DrawLine(majorTicPen, x, 0, x, Height - 1);
+                    g.DrawLine(majorTicPen, x, yMin, x, Height - 1);
                 }
             }
         }
@@ -105,9 +109,17 @@ namespace DiagramGrid.Controls
             return (Height - 1) / majorYTicsCount;
         }
 
+        private int GetMinorTicsCount(int deltaMajor)
+        {
+            int nMinor = deltaMajor / minDelta;
+            if (nMinor == 0)
+                return nMinor;
+            return minorTicsCount.Find(x => x <= nMinor);
+        }
+
         [Category("Custom")]
         [Browsable(true)]
-        [Description("Sets or gets the number of major tics count on x-axis")]
+        [Description("Sets or gets the number of major tics on x-axis.")]
         public int MajorXTicsCount
         {
             get => majorXTicsCount;
@@ -125,7 +137,7 @@ namespace DiagramGrid.Controls
 
         [Category("Custom")]
         [Browsable(true)]
-        [Description("Sets or gets the number of major tics count on y-axis")]
+        [Description("Sets or gets the number of major tics on y-axis.")]
         public int MajorYTicsCount
         {
             get => majorYTicsCount;
@@ -143,7 +155,7 @@ namespace DiagramGrid.Controls
 
         [Category("Custom")]
         [Browsable(true)]
-        [Description("Sets or gets the minimal distance between grid lines"), DefaultValue(20)]
+        [Description("Sets or gets the minimal distance between grid lines."), DefaultValue(20)]
         public int MinDelta 
         {
             get => minDelta;
@@ -161,7 +173,7 @@ namespace DiagramGrid.Controls
 
         [Category("Custom")]
         [Browsable(true)]
-        [Description("Sets or gets the color of major tics line")]
+        [Description("Sets or gets the color of major tics line.")]
         [DefaultValue(typeof(Color), "LightGray")]
         public Color MajorTicColor
         {
@@ -178,7 +190,7 @@ namespace DiagramGrid.Controls
 
         [Category("Custom")]
         [Browsable(true)]
-        [Description("Sets or gets the color of minor tics line")]
+        [Description("Sets or gets the color of minor tics line.")]
         [DefaultValue(typeof(Color), "WhiteSmoke")]
         public Color MinorTicColor
         {
@@ -203,10 +215,25 @@ namespace DiagramGrid.Controls
             }
         }
 
+        [Category("Custom")]
+        [Browsable(true)]
+        [Description("Sets or gets the possible number of minor tics between two major tics.")]
+        [DefaultValue(typeof(Color), "WhiteSmoke")]
+        public List<int> MinorTicsNumber
+        {
+            get => minorTicsCount;
+            set
+            {
+                minorTicsCount = new DiagramGridControl.SortedList<int>(value, (x, y) => y - x);
+                NotifyPropertyChanged(nameof(MinorTicsNumber));
+            }
+        }
+
         private int minDelta = 20;
         private int majorXTicsCount = 3;
         private int majorYTicsCount = 2;
         private Color majorTicColor = Color.LightSlateGray;
         private Color minorTicColor = Color.LightGray;
+        private DiagramGridControl.SortedList<int> minorTicsCount = new DiagramGridControl.SortedList<int>(new List<int>{ 2, 4, 5, 10 }, (x, y) => y - x);
     }
 }

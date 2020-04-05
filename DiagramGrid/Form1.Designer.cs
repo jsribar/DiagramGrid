@@ -39,6 +39,10 @@
             this.grid1.Location = new System.Drawing.Point(12, 12);
             this.grid1.MajorXTicsCount = 3;
             this.grid1.MajorYTicsCount = 2;
+            new DiagramGridControl.SortedList<int>().Add(10);
+            new DiagramGridControl.SortedList<int>().Add(5);
+            new DiagramGridControl.SortedList<int>().Add(4);
+            new DiagramGridControl.SortedList<int>().Add(2);
             this.grid1.Name = "grid1";
             this.grid1.Size = new System.Drawing.Size(668, 440);
             this.grid1.TabIndex = 0;
